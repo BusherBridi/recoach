@@ -1,7 +1,7 @@
 import React from "react";
 import { PlayerTitle } from "../components/PlayerTitle";
 import { steamIDs } from "../data/steamIDs";
-
+import { fetchPlayerProfile } from "../api/rematch";
 export default function Leaderboard() {
   console.log("steamIDs:", steamIDs); // Log the steamIDs array
 
