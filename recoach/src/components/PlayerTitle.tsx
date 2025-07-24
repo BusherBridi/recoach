@@ -1,7 +1,3 @@
-import { useEffect, useState } from "react";
-import { fetchPlayerProfile } from "../api/rematch";
-import type { Stats } from "../models/Stats";
-import { StatLabels } from "../models/Stats";
 import { StatLine } from "./StatLine";
 
 export function PlayerTitle({ username, displayStat, statValue}: { username: string, displayStat: string, statValue: string }) {

@@ -1,27 +1,15 @@
-import { useEffect, useState } from "react";
 import { Card } from "./Card";
-import { fetchPlayerProfile } from "../api/rematch";
 import type { Stats } from "../models/Stats";
 import { StatLabels } from "../models/Stats";
 import { StatLine } from "./StatLine";
 import { ShotRatioStat } from "./ShotRatioStat";
 
-// Optional: Map stat keys to display labels
+type PlayerCardProps = {
+  profile?: any;
+  stats?: Stats;
+};
 
-export function PlayerCard({ steamId }: { steamId?: string }) {
-  const [profile, setProfile] = useState<any | null>(null);
-  const [stats, setStats] = useState<Stats | null>(null);
-
-  useEffect(() => {
-    if (!steamId) return;
-    fetchPlayerProfile("steam", steamId)
-      .then((data) => {
-        setProfile(data);
-        setStats(data.lifetime_stats.All as Stats);
-      })
-      .catch(console.error);
-  }, [steamId]);
-
+export function PlayerCard({ profile, stats }: PlayerCardProps) {
   if (!profile || !stats) return <div className="skeleton h-70 w-40"></div>;
 
   return (

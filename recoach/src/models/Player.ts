@@ -1,4 +1,4 @@
-import { Stats } from './Stats';
+import type { Stats } from './Stats';
 export class Player{
     public id: string;
     public name: string;
