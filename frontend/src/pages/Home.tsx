@@ -10,6 +10,7 @@ import type { Stats } from "../models/Stats";
 export default function Home() {
   // Store players by id
   const [playersDict, setPlayersDict] = useState<Record<string, Player>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchAll() {
@@ -19,6 +20,7 @@ export default function Home() {
         steamIDs.map(async (steamId) => {
           try {
             const data = await fetchPlayerProfile("steam", steamId);
+            console.log("Fetched data for", steamId, data);
             dict[steamId] = new Player(
               steamId,
               data.player.display_name,
@@ -26,11 +28,15 @@ export default function Home() {
             );
           } catch (error) {
             console.error(`Failed fetching ${steamId}`, error);
+            return(
+              <div>Failure</div>
+            )
           }
         })
       );
 
       setPlayersDict(dict);
+      setIsLoading(false);
     }
 
     fetchAll();
@@ -40,23 +46,28 @@ export default function Home() {
     <>
       <div>
         <h1
-          style={{ display: "flex", justifyContent: "center", fontSize: "3rem" }}
+        // Make this into a component later
+          style={{ display: "flex", justifyContent: "center", fontSize: "3rem" }}  
         >
           LOS DIABLOS F.C
         </h1>
         <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-          {steamIDs.map((id) => {
-            const player = playersDict[id];
-            if (!player) return <div key={id}>Loading...</div>;
-
-            return (
-              <PlayerCard
-                key={id}
-                profile={{ player: { display_name: player.name } }}
-                stats={player.stats}
-              />
-            );
-          })}
+          {isLoading ? (
+            <div className="skeleton h-70 w-40"></div>
+          ) : (
+            <div className="grid grid-cols-5 gap-4">
+              {steamIDs.map((id) => {
+                const player = playersDict[id];
+                return (
+                  <PlayerCard
+                    key={id}
+                    profile={{ player: { display_name: player.name } }}
+                    stats={player.stats}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
