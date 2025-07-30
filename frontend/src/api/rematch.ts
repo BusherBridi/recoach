@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/player-profile";
+const API_URL = "http://3.101.17.116/api/player-profile";
 
 export async function fetchPlayerProfile(platform: string, platformId: string) {
   try {
