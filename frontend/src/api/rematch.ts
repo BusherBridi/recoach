@@ -1,4 +1,4 @@
-const API_URL = "https://api.rematchtracker.com/scrap/profile";
+const API_URL = "http://localhost:5000/api/player-profile";
 
 export async function fetchPlayerProfile(platform: string, platformId: string) {
   try {
