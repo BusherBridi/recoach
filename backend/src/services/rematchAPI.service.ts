@@ -76,15 +76,15 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
   });
 
   // Filter to only matches played by more than one player (i.e., as a team)
-  const teamMatches = Object.values(matchMap).filter(group => group.players.length > 1);
+  // const teamMatches = Object.values(matchMap).filter(group => group.players.length > 1);
 
-  console.log("Total team matches found:", teamMatches.length);
-  teamMatches.forEach((group, idx) => {
-    console.log(`Team match #${idx + 1}:`, {
-      players: group.players,
-      match: group.match
-    });
-  });
-
+  // console.log("Total team matches found:", teamMatches.length);
+  // teamMatches.forEach((group, idx) => {
+  //   console.log(`Team match #${idx + 1}:`, {
+  //     players: group.players,
+  //     match: group.match
+  //   });
+  // });
+  const teamMatches = Object.values(matchMap);
   return teamMatches;
 }
