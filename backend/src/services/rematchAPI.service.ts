@@ -58,7 +58,7 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
 
   profiles.forEach(({ platformId, match_history }) => {
     console.log(`Processing match history for ${platformId}, matches:`, match_history.length);
-    match_history.items.forEach((match: any) => {
+    match_history.forEach((match: any) => {
       // Create a signature for the match
       const key = [
         match.timestamp,
@@ -76,15 +76,15 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
   });
 
   // Filter to only matches played by more than one player (i.e., as a team)
-  // const teamMatches = Object.values(matchMap).filter(group => group.players.length > 1);
+  const teamMatches = Object.values(matchMap).filter(group => group.players.length > 1);
 
-  // console.log("Total team matches found:", teamMatches.length);
-  // teamMatches.forEach((group, idx) => {
-  //   console.log(`Team match #${idx + 1}:`, {
-  //     players: group.players,
-  //     match: group.match
-  //   });
-  // });
-  const teamMatches = matchMap
+  console.log("Total team matches found:", teamMatches.length);
+  teamMatches.forEach((group, idx) => {
+    console.log(`Team match #${idx + 1}:`, {
+      players: group.players,
+      match: group.match
+    });
+  });
+
   return teamMatches;
 }
