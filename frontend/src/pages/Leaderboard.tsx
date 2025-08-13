@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { PlayerTitle } from "../components/PlayerTitle";
 import { steamIDs } from "../data/steamIDs";
-import { fetchPlayerProfile } from "../api/rematch";
+import { fetchPlayerProfile, fetchTeamStats } from "../api/rematch";
 import { Player } from "../models/Player";
 import type { Stats } from "../models/Stats";
 
@@ -33,11 +33,19 @@ export default function Leaderboard() {
     fetchAll();
   }, []);
 
-  const sortedPlayers = Object.values(playersDict).sort(
-    (a, b) => b.stats.goals - a.stats.goals // Sort by total goals (built in js sort)
-  );
+const sortedPlayers = Object.values(playersDict).sort(
+  (a, b) => b.stats.goals - a.stats.goals // Sort by total goals (built in js sort)
+);
 
-  return (
+useEffect(() => {
+  async function fetchTeamMatches() {
+    const teamMatches = await fetchTeamStats("steam", steamIDs);
+    console.log(teamMatches);
+  }
+  fetchTeamMatches();
+}, []);
+
+return (
 <div className="flex flex-col items-center mt-10">
   <h1 className="text-3xl font-bold mb-4">Leaderboard</h1>
   <div className="flex flex-col items-center space-y-4">
