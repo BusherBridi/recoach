@@ -54,7 +54,7 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
   );
 
   // Build a map: key = unique match signature, value = array of playerIds and their matches
-  const matchMap: Record<string, { match: any, players: string[], matches: any[] }> = {};
+  const matchMap: Record<string, { match: any, players: string[], matches: any[], aggregatedStats?: Record<string, number> }> = {};
 
   const TIME_WINDOW = 10 * 60 * 1000; // 10 minutes in milliseconds
 
