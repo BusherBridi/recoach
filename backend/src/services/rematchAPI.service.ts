@@ -56,24 +56,44 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
   // Build a map: key = unique match signature, value = array of playerIds
   const matchMap: Record<string, { match: any, players: string[] }> = {};
 
-  profiles.forEach(({ platformId, match_history }) => {
-    console.log(`Processing match history for ${platformId}, matches:`, match_history.length);
-    match_history.forEach((match: any) => {
-      // Create a signature for the match
-      const key = [
-        match.timestamp,
-        match.match_count,
-        match.playlist,
-        match.wins,
-        match.losses
-      ].join("|");
+const TIME_WINDOW = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-      if (!matchMap[key]) {
-        matchMap[key] = { match, players: [] };
+profiles.forEach(({ platformId, match_history }) => {
+  match_history.forEach((match: any) => {
+    const matchTime = new Date(match.timestamp).getTime();
+
+    // Check if an existing match in matchMap is within TIME_WINDOW
+    let existingMatchKey: string | null = null;
+    for (const key in matchMap) {
+      const group = matchMap[key];
+      const existingTime = new Date(group.match.timestamp).getTime();
+
+      if (
+        Math.abs(existingTime - matchTime) <= TIME_WINDOW &&
+        group.match.playlist === match.playlist &&
+        group.match.wins === match.wins &&
+        group.match.losses === match.losses
+      ) {
+        existingMatchKey = key;
+        break;
       }
-      matchMap[key].players.push(platformId);
-    });
+    }
+
+    // Use existing key if found, otherwise create a new key
+    const key = existingMatchKey || [
+      match.timestamp,
+      match.playlist,
+      match.wins,
+      match.losses
+    ].join("|");
+
+    if (!matchMap[key]) {
+      matchMap[key] = { match, players: [] };
+    }
+    matchMap[key].players.push(platformId);
   });
+});
+
 
   // Filter to only matches played by more than one player (i.e., as a team)
   const teamMatches = Object.values(matchMap).filter(group => group.players.length > 1);
