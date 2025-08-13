@@ -85,6 +85,6 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
   //     match: group.match
   //   });
   // });
-  const teamMatches = Object.values(matchMap);
+  const teamMatches = matchMap
   return teamMatches;
 }
