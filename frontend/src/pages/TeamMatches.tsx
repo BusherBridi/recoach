@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchTeamStats } from "../api/rematch";
 import { steamIDs } from "../data/steamIDs";
 import { Card } from "../components/Card";
