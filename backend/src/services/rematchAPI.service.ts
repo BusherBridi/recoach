@@ -58,7 +58,7 @@ export async function getTeamMatches(platform: string, platformIds: string[]) {
 
   profiles.forEach(({ platformId, match_history }) => {
     console.log(`Processing match history for ${platformId}, matches:`, match_history.length);
-    match_history.forEach((match: any) => {
+    match_history.items.forEach((match: any) => {
       // Create a signature for the match
       const key = [
         match.timestamp,
