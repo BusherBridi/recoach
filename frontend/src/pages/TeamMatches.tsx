@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { fetchTeamStats } from "../api/rematch";
+import { fetchTeamStats, fetchPlayerProfile } from "../api/rematch";
 import { steamIDs } from "../data/steamIDs";
 import { Card } from "../components/Card";
 import { StatLine } from "../components/StatLine";
+import { Player } from "../models/Player";
+import type { Stats } from "../models/Stats";
 
-interface TeamMatch {
+interface RawTeamMatch {
   match: {
     timestamp: string;
     playlist: string;
@@ -26,6 +28,12 @@ interface TeamMatch {
   };
 }
 
+interface TeamMatch {
+  match: RawTeamMatch["match"];
+  players: Player[];
+  aggregatedStats: RawTeamMatch["aggregatedStats"];
+}
+
 export default function TeamMatches() {
   const [matches, setMatches] = useState<TeamMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,15 +41,48 @@ export default function TeamMatches() {
   useEffect(() => {
     async function fetchTeamMatches() {
       try {
-        const data = await fetchTeamStats("steam", steamIDs);
-        setMatches(data);
-        console.log("Team matches:", data);
+        const data: RawTeamMatch[] = await fetchTeamStats("steam", steamIDs);
+
+        // 1️⃣ Simple in-memory cache
+        const playerCache: Record<string, Player> = {};
+
+        const matchesWithProfiles: TeamMatch[] = await Promise.all(
+          data.map(async (match) => {
+            const playersProfiles: Player[] = await Promise.all(
+              match.players.map(async (playerId: string) => {
+                // If player is already cached, return it
+                if (playerCache[playerId]) return playerCache[playerId];
+
+                const raw = await fetchPlayerProfile("steam", playerId);
+                const player = new Player(
+                  raw.player.platform_id,
+                  raw.player.display_name,
+                  raw.lifetime_stats as Stats
+                );
+
+                // Cache the player
+                playerCache[playerId] = player;
+                return player;
+              })
+            );
+
+            return {
+              match: match.match,
+              players: playersProfiles,
+              aggregatedStats: match.aggregatedStats,
+            };
+          })
+        );
+
+        setMatches(matchesWithProfiles);
+        console.log("Team matches with cached Player instances:", matchesWithProfiles);
       } catch (error) {
-        console.error("Error fetching team matches:", error);
+        console.error("Error fetching team matches or player profiles:", error);
       } finally {
         setLoading(false);
       }
     }
+
     fetchTeamMatches();
   }, []);
 
@@ -57,43 +98,26 @@ export default function TeamMatches() {
           <Card key={index}>
             <div className="mb-4">
               <h2 className="text-xl font-semibold">
-                {new Date(match.match.timestamp).toLocaleDateString()} - {match.match.playlist}
+                {new Date(match.match.timestamp).toLocaleDateString()} -{" "}
+                {match.match.playlist}
               </h2>
               <p className="text-sm">
                 Result: {match.match.wins} wins - {match.match.losses} losses
               </p>
               <p className="text-sm">
-                Players: {match.players.join(", ")}
+                Players: {match.players.map((player) => player.name).join(", ")}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <StatLine label="Goals">
-                {match.aggregatedStats.goals}
-              </StatLine>
-              <StatLine label="Assists">
-                {match.aggregatedStats.assists}
-              </StatLine>
-              <StatLine label="Saves">
-                {match.aggregatedStats.goalkeeper_saves}
-              </StatLine>
-              <StatLine label="Shots">
-                {match.aggregatedStats.shots}
-              </StatLine>
-              <StatLine label="Shots on Target">
-                {match.aggregatedStats.shots_on_target}
-              </StatLine>
-              <StatLine label="Passes">
-                {match.aggregatedStats.passes}
-              </StatLine>
-              <StatLine label="Interceptions">
-                {match.aggregatedStats.intercepted_passes}
-              </StatLine>
-              <StatLine label="Tackles">
-                {match.aggregatedStats.tackles}
-              </StatLine>
-              <StatLine label="MVPs">
-                {match.aggregatedStats.mvp_titles}
-              </StatLine>
+              <StatLine label="Goals">{match.aggregatedStats.goals}</StatLine>
+              <StatLine label="Assists">{match.aggregatedStats.assists}</StatLine>
+              <StatLine label="Saves">{match.aggregatedStats.goalkeeper_saves}</StatLine>
+              <StatLine label="Shots">{match.aggregatedStats.shots}</StatLine>
+              <StatLine label="Shots on Target">{match.aggregatedStats.shots_on_target}</StatLine>
+              <StatLine label="Passes">{match.aggregatedStats.passes}</StatLine>
+              <StatLine label="Interceptions">{match.aggregatedStats.intercepted_passes}</StatLine>
+              <StatLine label="Tackles">{match.aggregatedStats.tackles}</StatLine>
+              <StatLine label="MVPs">{match.aggregatedStats.mvp_titles}</StatLine>
             </div>
           </Card>
         ))}
